@@ -4,8 +4,8 @@ Stacklane is a free AI spend auditor for startup founders and engineering manage
 
 ## Demo
 
-- Live URL: `ADD_YOUR_DEPLOYED_URL`
-- Public sample report: `ADD_YOUR_SAMPLE_REPORT_URL`
+- Live URL: `https://credex-assignment-delta.vercel.app`
+- Public sample report: `https://credex-assignment-delta.vercel.app/report/e50931b23121`
 
 ## Screenshots / Recording
 
