@@ -241,6 +241,9 @@ export function AuditResults({
                     {!hideLeadCapture && (
                         <EmailGate
                             auditSlug={auditSlug}
+                            input={input}
+                            result={result}
+                            summary={summary}
                             totalSaved={result.totalSaved}
                             highValue={result.highValue}
                             defaultTeamSize={input.teamSize}

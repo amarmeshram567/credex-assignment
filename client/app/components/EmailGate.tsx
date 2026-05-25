@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { AuditInput, AuditResult } from "@/lib/audit";
 
 const STORAGE_KEY = "credex-leads-v1";
 
@@ -15,11 +16,17 @@ interface Lead {
 
 export function EmailGate({
     auditSlug,
+    input,
+    result,
+    summary,
     totalSaved,
     highValue,
     defaultTeamSize,
 }: {
     auditSlug?: string;
+    input: AuditInput;
+    result: AuditResult;
+    summary: string;
     totalSaved: number;
     highValue: boolean;
     defaultTeamSize?: number;
@@ -36,10 +43,6 @@ export function EmailGate({
     const submit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (website) return;
-        if (!auditSlug) {
-            setError("The public report is still being prepared. Try again in a moment.");
-            return;
-        }
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
             setError("Enter a valid work email.");
             return;
@@ -47,6 +50,33 @@ export function EmailGate({
 
         try {
             setSubmitting(true);
+            let resolvedAuditSlug = auditSlug;
+
+            if (!resolvedAuditSlug) {
+                const auditResponse = await fetch("/api/audits", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        input,
+                        result,
+                        summary,
+                    }),
+                });
+
+                if (!auditResponse.ok) {
+                    throw new Error("Could not save the public report.");
+                }
+
+                const auditPayload = (await auditResponse.json()) as { shareSlug?: string };
+                resolvedAuditSlug = auditPayload.shareSlug;
+            }
+
+            if (!resolvedAuditSlug) {
+                throw new Error("Missing audit slug.");
+            }
+
             const lead: Lead = {
                 email: email.trim(),
                 company: company.trim() || undefined,
@@ -62,7 +92,7 @@ export function EmailGate({
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    auditSlug,
+                    auditSlug: resolvedAuditSlug,
                     ...lead,
                     website,
                 }),
@@ -206,7 +236,7 @@ export function EmailGate({
 
             <button
                 type="submit"
-                disabled={submitting || !auditSlug}
+                disabled={submitting}
                 className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition hover:-translate-y-0.5 hover:brightness-105"
             >
                 {submitting
