@@ -18,19 +18,19 @@ const empty: Draft = { lines: [], teamSize: 5, useCase: "coding" };
 
 export function SpendForm() {
     const router = useRouter();
-    const [draft, setDraft] = useState<Draft>(() => {
-        if (typeof window === "undefined") return empty;
-        try {
-            const raw = window.localStorage.getItem(STORAGE_KEY);
-            return raw ? { ...empty, ...JSON.parse(raw) } : empty;
-        } catch {
-            return empty;
-        }
-    });
+    const [draft, setDraft] = useState<Draft>(empty);
     const hasMounted = useRef(false);
 
     useEffect(() => {
         hasMounted.current = true;
+        try {
+            const raw = window.localStorage.getItem(STORAGE_KEY);
+            if (raw) {
+                setDraft((current) => ({ ...current, ...JSON.parse(raw) }));
+            }
+        } catch {
+            // Ignore malformed local drafts and keep the default state.
+        }
     }, []);
 
     useEffect(() => {
